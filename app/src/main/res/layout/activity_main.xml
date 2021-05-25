@@ -20,6 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
     <ImageView
+        android:id="@+id/imageView"
         android:scaleType="fitXY"
         android:src="@mipmap/ic_launcher"
         android:layout_marginTop="30dp"
