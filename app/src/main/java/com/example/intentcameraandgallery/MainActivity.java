@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -41,7 +42,10 @@ public class MainActivity extends AppCompatActivity {
                 new ActivityResultCallback<ActivityResult>() {
                     @Override
                     public void onActivityResult(ActivityResult result) {
-                        Log.d("BBB","Đã nhảy vào");
+                        if (result.getData() != null && result.getResultCode() == RESULT_OK) {
+                            Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
+                            mImg.setImageBitmap(bitmap);
+                        }
                     }
                 }
         );
