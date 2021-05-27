@@ -1,14 +1,12 @@
 package com.example.intentcameraandgallery;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -26,7 +24,9 @@ public class MainActivity extends AppCompatActivity {
     Button mBtnCamera, mBtnGallery;
     ImageView mImg;
     int REQUEST_CODE_CAMERA = 123;
-    ActivityResultLauncher<Intent> mActivityResultLauncher;
+    int REQUEST_CODE_GALLERY = 234;
+    ActivityResultLauncher<Intent> mActivityResultLauncherCamera;
+    ActivityResultLauncher<String> mActivityResultLauncherGallery;
 
 
     @Override
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         mBtnGallery = findViewById(R.id.buttonGallery);
         mImg = findViewById(R.id.imageView);
 
-        mActivityResultLauncher = registerForActivityResult(
+        mActivityResultLauncherCamera = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
                     @Override
@@ -46,6 +46,19 @@ public class MainActivity extends AppCompatActivity {
                             Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
                             mImg.setImageBitmap(bitmap);
                         }
+                    }
+                }
+        );
+
+        mActivityResultLauncherGallery = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                new ActivityResultCallback<Uri>() {
+                    @Override
+                    public void onActivityResult(Uri result) {
+                        if (result != null){
+                            mImg.setImageURI(result);
+                        }
+
                     }
                 }
         );
@@ -68,7 +81,22 @@ public class MainActivity extends AppCompatActivity {
                     );
                 }else{
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    mActivityResultLauncher.launch(intent);
+                    mActivityResultLauncherCamera.launch(intent);
+                }
+            }
+        });
+
+        mBtnGallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(
+                            MainActivity.this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            REQUEST_CODE_GALLERY
+                    );
+                }else{
+                    mActivityResultLauncherGallery.launch("image/*");
                 }
             }
         });
@@ -79,7 +107,12 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_CAMERA) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                mActivityResultLauncher.launch(intent);
+                mActivityResultLauncherCamera.launch(intent);
+            }
+        }
+        if (requestCode == REQUEST_CODE_GALLERY){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                mActivityResultLauncherGallery.launch("image/*");
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
